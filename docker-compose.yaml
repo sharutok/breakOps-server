@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+
+  node-application:
+    build: .
+    container_name: node-application
+    ports:
+      - "8188:8000"
+    restart: always
