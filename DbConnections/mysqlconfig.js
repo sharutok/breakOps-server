@@ -3,11 +3,11 @@ const mysql =require('mysql2/promise');
 exports.mysqlConnect=async(q)=> {
     try {
         const connection = await mysql.createConnection({
-            host: 'adorwelding.org',
-            user: 'maintainance_select',
-            database: 'Maintenance',
+            host: process.env.MYSQL_HOST,
+            user: process.env.MYSQL_USER,
+            database:process.env.MYSQL_DATABASE,
             port: 3306,
-            password: 'cxjvbycnwfnb',
+            password: process.env.MYSQL_PASSWORD,
         });
         return connection.query(q)
 
