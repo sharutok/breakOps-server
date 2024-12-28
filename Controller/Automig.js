@@ -7,7 +7,7 @@ exports.AutomigData = async(req, res) => {
     try {
         // get cached data from redis
         const r = await redisConnect()
-        const r_dashboard_output =await r.get("dashboard_output")
+        const r_dashboard_output = await r.get("dashboard_output")
         if (r_dashboard_output) {
             console.log("cached_output");
             return res.status(200).json(JSON.parse(r_dashboard_output))
@@ -17,10 +17,12 @@ exports.AutomigData = async(req, res) => {
         const auto_mig = []
         const electrode = []
 
-        const start_date=moment(req.body.start_date).format("YYYY-MM-DD")
+        const start_date = moment(req.body.start_date).format("YYYY-MM-DD")
         const end_date = moment(req.body.end_date).format("YYYY-MM-DD")
         
         const list = JSON.parse(await r.get("ignored_equipment_id"))
+        console.log(list);
+        
 
         const data = await mysqlConnect(breakdown_machines_query(start_date,end_date,list))
         console.log(data?.[0]?.length, start_date,end_date);
@@ -86,7 +88,7 @@ exports.AutomigData = async(req, res) => {
 
         return res.status(200).json(output)
     } catch (error) {
-        console.log(error);
+        console.log("AutomigData",error);
         return res.status(400).json({error:JSON.stringify(error)})        
     }
 }
