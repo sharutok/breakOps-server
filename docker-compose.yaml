@@ -6,4 +6,4 @@ services:
     container_name: node-application
     ports:
       - "8188:8000"
-    restart: always
+    # restart: always
