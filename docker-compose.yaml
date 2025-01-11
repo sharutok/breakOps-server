@@ -1,9 +1,9 @@
 version: "3.9"
 services:
 
-  node-application:
+  break-ops-server:
     build: .
-    container_name: node-application
+    container_name: break-ops-server
     ports:
       - "8188:8000"
     # restart: always
