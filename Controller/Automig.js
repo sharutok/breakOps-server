@@ -1,19 +1,43 @@
 const moment = require("moment");
 const { mysqlConnect } = require("../DbConnections/mysqlconfig");
-const { redisConnect } = require("../DbConnections/redisconfig");
+const { redisConnect, getRedisClient } = require("../DbConnections/redisconfig");
 const { breakdown_machines_query, list_of_section_id } = require("../sql_queries/mysql");
+const schedule = require("node-schedule");
 
-exports.AutomigData = async(req, res) => {
+
+schedule.scheduleJob("*/15 10-23 * * *", () => {
+    console.log("called AutomigFetchedData");
+    this.AutomigFetchedData()
+});
+
+
+exports.AutomigCachedData = async (req, res) => {
     try {
-        const r = await redisConnect()
-
+        
+        const r = await getRedisClient()
         const r_dashboard_output = await r.get("dashboard_output")
         if (r_dashboard_output) {
             console.log("cached_output");
-            await r.quit();
+            // await r.quit();
             return res.status(200).json(JSON.parse(r_dashboard_output))
         }
-        
+    } catch (error) {
+        console.log("error in AutomigCachedData", error);
+    }
+ }
+
+exports.AutomigFetchedData = async (req, res) => { 
+    try {
+        this.AutomigData()
+        res&&res.json({"mess":"ok"})
+    } catch (error) {
+        console.log("AutomigFetchedData",error);
+    }
+}
+
+exports.AutomigData = async(req, res) => {
+    try {
+        const r = await getRedisClient()
         const auto_mig = []
         const electrode = []
 
@@ -40,7 +64,6 @@ exports.AutomigData = async(req, res) => {
         
         auto_mig.map(x => {
             auto_mig_section.add(x.section);
-            
         })
         
         electrode.map(x => {
@@ -78,21 +101,23 @@ exports.AutomigData = async(req, res) => {
                 return acc;
             }, {});
         };
+        
         console.log("generated_output");
         const output ={ auto_mig: groupDataBySection(final_automig), electrode: groupDataBySection(final_electrode)}
 
         save_dashboard_output_data_to_redis(output)
         
-        return res.status(200).json(output)
+        return res && res.status(200).json(output)
+
     } catch (error) {
-        console.log("AutomigData",error);
-        return res.status(400).json({error:JSON.stringify(error)})        
+        console.log("AutomigData", error);
+        return res && res.status(400).json({ error: JSON.stringify(error) })        
     }
 }
 
 exports.ListOfIgnoredSectionId = async (req, res) => {
     try {
-        const r = await redisConnect()
+        const r = await getRedisClient()
         const r_list_of_all_equipment = await r.get("list_of_all_equipment")
         if (r_list_of_all_equipment) {
             console.log("cached_output r_list_of_all_equipment");
@@ -106,7 +131,7 @@ exports.ListOfIgnoredSectionId = async (req, res) => {
         })
         console.log("generated_output r_list_of_all_equipment");
         save_all_equipment_id_to_redis(equipment_data)
-        await r.quit();
+        // await r.quit();
         res.status(200).json(equipment_data)
     } catch (error) {
         console.log("error in ListOfIgnoredSectionId",error);
@@ -115,7 +140,7 @@ exports.ListOfIgnoredSectionId = async (req, res) => {
 
 exports.getIgnoredEquipmentId = async (req, res) => {
     try {
-        const _res = await ((await redisConnect()).get("ignored_equipment_id"))
+        const _res = await ((await getRedisClient()).get("ignored_equipment_id"))
         res.status(200).json(JSON.parse(_res))
     } catch (error) {
         console.log("getIgnoredEquipmentId",error);
@@ -125,8 +150,8 @@ exports.getIgnoredEquipmentId = async (req, res) => {
 exports.setIgnoredEquipmentId = async (req, res) => {
     try {
         const equipment_id = req?.body?.equipmentList
-        await (await redisConnect()).del("dashboard_output")
-        const _res = await ((await redisConnect()).set("ignored_equipment_id", JSON.stringify(equipment_id)))
+        await (await getRedisClient()).del("dashboard_output")
+        const _res = await ((await getRedisClient()).set("ignored_equipment_id", JSON.stringify(equipment_id)))
         res.status(200).json(_res)
     } catch (error) {
         res.status(400)
@@ -135,19 +160,18 @@ exports.setIgnoredEquipmentId = async (req, res) => {
 }
 
 async function save_dashboard_output_data_to_redis(data) {
-    const rconnection = await redisConnect()
+    const rconnection = await getRedisClient()
     rconnection.set("dashboard_output", JSON.stringify(data) , {
         EX: 60 * 60 * 0.25 
     })
+    // await rconnection.quit();
 }
 
 async function save_all_equipment_id_to_redis(data) {
-    const rconnection = await redisConnect()
+    const rconnection = await getRedisClient()
     rconnection.set("list_of_all_equipment", JSON.stringify(data) , {
         EX: 60 * 60 * 24
     })
+    // await rconnection.quit();
 }
-
-
-
 

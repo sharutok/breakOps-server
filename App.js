@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors');
 const morgan = require('morgan');
 const router = require('./Router/Route');
-const { redisConnect } = require('./DbConnections/redisconfig');
+const {  getRedisClient } = require('./DbConnections/redisconfig');
 require('dotenv').config({ path: './.env' });
 
 app.use(cors({ origin: process.env.CLIENT_ORIGIN }));
@@ -19,11 +19,9 @@ app.get('/health', async (req, res) => {
   console.log('Initializing Redis keys...');
 
   try {
-    const r = await redisConnect(); // Connect to Redis
-
-    // Check and set keys if they don't exist
+    const r = await getRedisClient();
     const keysToInitialize = {
-        dashboard_output: JSON.stringify([]),
+        // dashboard_output: JSON.stringify([]),
         ignored_equipment_id: JSON.stringify([]),
         list_of_all_equipment: JSON.stringify([])
     };
@@ -37,9 +35,7 @@ app.get('/health', async (req, res) => {
         console.log(`Key "${key}" already exists.`);
       }
     }
-
-    // Close the Redis connection
-    await r.quit();
+    // await r.quit();
     console.log('Redis initialization complete.');
   } catch (err) {
     console.error('Error during Redis initialization:', err);
