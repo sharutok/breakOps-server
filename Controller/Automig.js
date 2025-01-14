@@ -16,9 +16,11 @@ exports.AutomigCachedData = async (req, res) => {
         
         const r = await getRedisClient()
         const r_dashboard_output = await r.get("dashboard_output")
-        if (r_dashboard_output) {
+        if ((JSON.parse(r_dashboard_output)) === "intialized") {
+            this.AutomigFetchedData()
+        }
+        else {
             console.log("cached_output");
-            // await r.quit();
             return res.status(200).json(JSON.parse(r_dashboard_output))
         }
     } catch (error) {
@@ -41,8 +43,12 @@ exports.AutomigData = async(req, res) => {
         const auto_mig = []
         const electrode = []
 
-        const start_date = moment(req?.body?.start_date).format("YYYY-MM-DD")
-        const end_date = moment(req?.body?.end_date).format("YYYY-MM-DD")
+        // const start_date = moment(req?.body?.start_date).format("YYYY-MM-DD")
+        // const end_date = moment(req?.body?.end_date).format("YYYY-MM-DD")
+
+        const start_date = moment().startOf('month').format('YYYY-MM-DD');
+        const end_date = moment().endOf('month').format('YYYY-MM-DD');
+
         const list = JSON.parse(await r.get("ignored_equipment_id"))
 
         const data = await mysqlConnect(breakdown_machines_query(start_date,end_date,list))

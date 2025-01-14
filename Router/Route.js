@@ -9,4 +9,7 @@ router.get('/list-of-rejected-equipment-id', getIgnoredEquipmentId)
 router.post('/list-of-rejected-equipment-id', setIgnoredEquipmentId)
 
 
-module.exports=router
+module.exports = router
+
+
+

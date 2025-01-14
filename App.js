@@ -21,7 +21,7 @@ app.get('/health', async (req, res) => {
   try {
     const r = await getRedisClient();
     const keysToInitialize = {
-        // dashboard_output: JSON.stringify([]),
+      dashboard_output: JSON.stringify("intialized") ,
         ignored_equipment_id: JSON.stringify([]),
         list_of_all_equipment: JSON.stringify([])
     };
