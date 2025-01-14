@@ -161,9 +161,7 @@ exports.setIgnoredEquipmentId = async (req, res) => {
 
 async function save_dashboard_output_data_to_redis(data) {
     const rconnection = await getRedisClient()
-    rconnection.set("dashboard_output", JSON.stringify(data) , {
-        EX: 60 * 60 * 0.25 
-    })
+    rconnection.set("dashboard_output", JSON.stringify(data) )
     // await rconnection.quit();
 }
 
