@@ -5,7 +5,7 @@ const { breakdown_machines_query, list_of_section_id } = require("../sql_queries
 const schedule = require("node-schedule");
 
 
-schedule.scheduleJob("*/15 10-23 * * *", () => {
+schedule.scheduleJob("*/15 * * * *", () => {
     console.log("called AutomigFetchedData");
     this.AutomigFetchedData()
 });
